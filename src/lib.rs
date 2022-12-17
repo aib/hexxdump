@@ -1,5 +1,15 @@
 pub const SUBSTITUTE_CHAR: char = '.';
 
+pub fn get_hexdump_tuple(bytes: &[u8]) -> (String, String) {
+	let (mut hex, view) = bytes.iter().map(|b| {
+		(format!("{:02x} ", b), u8_to_display_char(*b))
+	}).unzip::<String, char, String, String>();
+
+	hex.pop();
+
+	(hex, view)
+}
+
 pub fn u8_to_display_char(u: u8) -> char {
 	if u.is_ascii_graphic() {
 		char::from(u)
@@ -13,6 +23,26 @@ pub fn u8_to_display_char(u: u8) -> char {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn test_get_hexdump_tuple() {
+		assert_eq!(
+			get_hexdump_tuple(b"Hello, World!"),
+			(
+				String::from("48 65 6c 6c 6f 2c 20 57 6f 72 6c 64 21"),
+				String::from("Hello, World!")
+			)
+		);
+
+		assert_eq!(
+			get_hexdump_tuple(b"123\nstr\0with \t n...a\x5c\x11\xff\x7f"),
+			(
+				String::from("31 32 33 0a 73 74 72 00 77 69 74 68 20 09 20 6e 2e 2e 2e 61 5c 11 ff 7f"),
+				String::from("123.str.with . n...a\\...")
+			)
+		);
+
+	}
 
 	#[test]
 	fn test_u8_to_display_char() {
