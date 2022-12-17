@@ -1,5 +1,18 @@
 pub const SUBSTITUTE_CHAR: char = '.';
 
+pub fn get_hexdump_row(bytes: &[u8], bytes_per_row: usize) -> String {
+	let (hex, view) = get_hexdump_tuple(bytes);
+
+	let padding_width = bytes_per_row.saturating_sub(bytes.len()) * 3;
+
+	let mut row = String::with_capacity(hex.len() + padding_width + view.len());
+	row.push_str(&hex);
+	row.push_str(&" ".repeat(padding_width));
+	row.push_str("  ");
+	row.push_str(&view);
+	row
+}
+
 pub fn get_hexdump_tuple(bytes: &[u8]) -> (String, String) {
 	let (mut hex, view) = bytes.iter().map(|b| {
 		(format!("{:02x} ", b), u8_to_display_char(*b))
@@ -24,6 +37,37 @@ pub fn u8_to_display_char(u: u8) -> char {
 mod tests {
 	use super::*;
 
+	#[test]
+	fn test_get_hexdump_row() {
+		assert_eq!(
+			get_hexdump_row(b"123", 0),
+			"31 32 33  123"
+		);
+		assert_eq!(
+			get_hexdump_row(b"123", 1),
+			"31 32 33  123"
+		);
+		assert_eq!(
+			get_hexdump_row(b"123", 2),
+			"31 32 33  123"
+		);
+		assert_eq!(
+			get_hexdump_row(b"123", 3),
+			"31 32 33  123"
+		);
+		assert_eq!(
+			get_hexdump_row(b"123", 4),
+			"31 32 33     123"
+		);
+		assert_eq!(
+			get_hexdump_row(b"123", 5),
+			"31 32 33        123"
+		);
+		assert_eq!(
+			get_hexdump_row(b" .\x00\x01\x02\x03", 9),
+			"20 2e 00 01 02 03            ....."
+		);
+	}
 	#[test]
 	fn test_get_hexdump_tuple() {
 		assert_eq!(
