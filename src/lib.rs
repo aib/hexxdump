@@ -1,6 +1,10 @@
 pub const SUBSTITUTE_CHAR: char = '.';
 pub const MIN_ADDRESS_WIDTH: usize = 4;
 
+pub fn hexdump(bytes: &[u8]) {
+	hexdump_to(std::io::stdout(), bytes, 16).ok();
+}
+
 pub fn hexdump_to<W: std::io::Write>(mut output: W, bytes: &[u8], bytes_per_row: usize) -> std::io::Result<usize> {
 	let mut written = 0;
 	for (address, row) in get_rows(bytes, bytes_per_row) {
