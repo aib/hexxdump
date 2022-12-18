@@ -2,5 +2,13 @@
 name = "hexxdump"
 version = "0.1.0"
 edition = "2021"
+authors = ["Orhan \"aib\" Kavrakoglu <aibok42@gmail.com>"]
+license = "MIT"
+keywords = ["hex", "dump", "hexdump"]
+categories = ["development-tools::debugging"]
+homepage = "https://github.com/aib/hexxdump"
+repository = "https://github.com/aib/hexxdump"
+description = "Simple, single byte xxd-style hexdumps"
+readme = "README.md"
 
 [dependencies]
