@@ -24,21 +24,6 @@ pub fn get_hexdump(bytes: &[u8], bytes_per_row: usize) -> String {
 	dump
 }
 
-fn get_rows<'a>(bytes: &'a [u8], bytes_per_row: usize) -> impl Iterator<Item = (String, String)> + 'a {
-	let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
-	let min_address_width = min_hex_digits_for(bytes.len().saturating_sub(1));
-	let even_address_width = ((min_address_width + 1) / 2) * 2;
-	let address_width = even_address_width.max(MIN_ADDRESS_WIDTH);
-
-	let mut offset = 0;
-	bytes.chunks(chunk_size).map(move |bs| {
-		let address = format!("{:0width$x}: ", offset, width = address_width);
-		let row = get_hexdump_row(bs, bytes_per_row);
-		offset += bytes_per_row;
-		(address, row)
-	})
-}
-
 pub fn get_hexdump_row(bytes: &[u8], bytes_per_row: usize) -> String {
 	let mut row = String::new();
 
@@ -59,6 +44,21 @@ pub fn get_hexdump_row(bytes: &[u8], bytes_per_row: usize) -> String {
 	}
 
 	row
+}
+
+fn get_rows<'a>(bytes: &'a [u8], bytes_per_row: usize) -> impl Iterator<Item = (String, String)> + 'a {
+	let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
+	let min_address_width = min_hex_digits_for(bytes.len().saturating_sub(1));
+	let even_address_width = ((min_address_width + 1) / 2) * 2;
+	let address_width = even_address_width.max(MIN_ADDRESS_WIDTH);
+
+	let mut offset = 0;
+	bytes.chunks(chunk_size).map(move |bs| {
+		let address = format!("{:0width$x}: ", offset, width = address_width);
+		let row = get_hexdump_row(bs, bytes_per_row);
+		offset += bytes_per_row;
+		(address, row)
+	})
 }
 
 fn u8_to_display_char(u: u8) -> char {
