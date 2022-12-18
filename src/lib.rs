@@ -3,7 +3,9 @@ pub const MIN_ADDRESS_WIDTH: usize = 4;
 
 pub fn get_hexdump(bytes: &[u8], bytes_per_row: usize) -> String {
 	let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
-	let address_width = MIN_ADDRESS_WIDTH;
+	let min_address_width = min_hex_digits_for(bytes.len().saturating_sub(1));
+	let even_address_width = ((min_address_width + 1) / 2) * 2;
+	let address_width = even_address_width.max(MIN_ADDRESS_WIDTH);
 
 	let mut dump = String::new();
 	let mut offset = 0usize;
@@ -67,6 +69,52 @@ pub fn min_hex_digits_for(num: usize) -> usize {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	fn get_rep_bytes(n: usize) -> Vec<u8> {
+		std::iter::repeat((0..=255).collect::<Vec<u8>>()).flatten().take(n).collect()
+	}
+
+	#[test]
+	fn test_64k_hexdumps() {
+		let dump_64k = get_hexdump(&get_rep_bytes(0x10000), 8);
+		let lines_64k: Vec<&str> = dump_64k.lines().collect();
+
+		assert_eq!(lines_64k[0x0000], "0000: 00 01 02 03 04 05 06 07  ........");
+		assert_eq!(lines_64k[0x0006], "0030: 30 31 32 33 34 35 36 37  01234567");
+		assert_eq!(lines_64k[0x1fe6], "ff30: 30 31 32 33 34 35 36 37  01234567");
+		assert_eq!(lines_64k[0x1fff], "fff8: f8 f9 fa fb fc fd fe ff  ........");
+
+		let dump_64k1 = get_hexdump(&get_rep_bytes(0x10001), 8);
+		let lines_64k1: Vec<&str> = dump_64k1.lines().collect();
+
+		assert_eq!(lines_64k1[0x0000], "000000: 00 01 02 03 04 05 06 07  ........");
+		assert_eq!(lines_64k1[0x0006], "000030: 30 31 32 33 34 35 36 37  01234567");
+		assert_eq!(lines_64k1[0x01ff], "000ff8: f8 f9 fa fb fc fd fe ff  ........");
+		assert_eq!(lines_64k1[0x0200], "001000: 00 01 02 03 04 05 06 07  ........");
+		assert_eq!(lines_64k1[0x1fe6], "00ff30: 30 31 32 33 34 35 36 37  01234567");
+		assert_eq!(lines_64k1[0x1fff], "00fff8: f8 f9 fa fb fc fd fe ff  ........");
+		assert_eq!(lines_64k1[0x2000], "010000: 00                       .");
+	}
+
+	#[test]
+	fn test_1m_hexdumps() {
+		let dump_1m = get_hexdump(&get_rep_bytes(0x100000), 16);
+		let lines_1m: Vec<&str> = dump_1m.lines().collect();
+
+		assert_eq!(lines_1m[0x0000], "000000: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  ................");
+		assert_eq!(lines_1m[0x0fff], "00fff0: f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb fc fd fe ff  ................");
+		assert_eq!(lines_1m[0x1000], "010000: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  ................");
+		assert_eq!(lines_1m[0xffff], "0ffff0: f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb fc fd fe ff  ................");
+
+		let dump_1m_32 = get_hexdump(&get_rep_bytes(0x100000), 32);
+		let lines_1m_32: Vec<&str> = dump_1m_32.lines().collect();
+
+		assert_eq!(lines_1m_32[0x0000], "000000: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  ................................");
+		assert_eq!(lines_1m_32[0x0002], "000040: 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f 50 51 52 53 54 55 56 57 58 59 5a 5b 5c 5d 5e 5f  @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_");
+		assert_eq!(lines_1m_32[0x07ff], "00ffe0: e0 e1 e2 e3 e4 e5 e6 e7 e8 e9 ea eb ec ed ee ef f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb fc fd fe ff  ................................");
+		assert_eq!(lines_1m_32[0x0800], "010000: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  ................................");
+		assert_eq!(lines_1m_32[0x7fff], "0fffe0: e0 e1 e2 e3 e4 e5 e6 e7 e8 e9 ea eb ec ed ee ef f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb fc fd fe ff  ................................");
+	}
 
 	#[test]
 	fn test_get_hexdump() {
