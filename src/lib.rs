@@ -1,16 +1,16 @@
 const MIN_ADDRESS_WIDTH: usize = 4;
 
-pub fn hexdump(bytes: &[u8]) {
+pub fn hexdump<B: AsRef<[u8]>>(bytes: B) {
 	hexdump_to(std::io::stdout(), bytes, 16).ok();
 }
 
-pub fn hexdump_with_width(bytes: &[u8], bytes_per_row: usize) {
+pub fn hexdump_with_width<B: AsRef<[u8]>>(bytes: B, bytes_per_row: usize) {
 	hexdump_to(std::io::stdout(), bytes, bytes_per_row).ok();
 }
 
-pub fn hexdump_to<W: std::io::Write>(mut output: W, bytes: &[u8], bytes_per_row: usize) -> std::io::Result<usize> {
+pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(mut output: W, bytes: B, bytes_per_row: usize) -> std::io::Result<usize> {
 	let mut written = 0;
-	for (address, row) in get_rows(bytes, bytes_per_row) {
+	for (address, row) in get_rows(bytes.as_ref(), bytes_per_row) {
 		written += output.write(address.as_bytes())?;
 		written += output.write(row.as_bytes())?;
 		written += output.write(&[10])?;
@@ -18,9 +18,9 @@ pub fn hexdump_to<W: std::io::Write>(mut output: W, bytes: &[u8], bytes_per_row:
 	Ok(written)
 }
 
-pub fn get_hexdump(bytes: &[u8], bytes_per_row: usize) -> String {
+pub fn get_hexdump<B: AsRef<[u8]>>(bytes: B, bytes_per_row: usize) -> String {
 	let mut dump = String::new();
-	for (address, row) in get_rows(bytes, bytes_per_row) {
+	for (address, row) in get_rows(bytes.as_ref(), bytes_per_row) {
 		dump.push_str(&address);
 		dump.push_str(&row);
 		dump.push('\n');
