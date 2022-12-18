@@ -1,12 +1,18 @@
 pub const SUBSTITUTE_CHAR: char = '.';
+pub const MIN_ADDRESS_WIDTH: usize = 4;
 
 pub fn get_hexdump(bytes: &[u8], bytes_per_row: usize) -> String {
 	let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
+	let address_width = MIN_ADDRESS_WIDTH;
 
 	let mut dump = String::new();
+	let mut offset = 0usize;
 	for row in bytes.chunks(chunk_size) {
+		let address = format!("{:0width$x}: ", offset, width = address_width);
+		dump.push_str(&address);
 		dump.push_str(&get_hexdump_row(row, bytes_per_row));
 		dump.push('\n');
+		offset += chunk_size;
 	}
 	dump
 }
@@ -66,52 +72,52 @@ mod tests {
 	fn test_get_hexdump() {
 		assert_eq!(
 			get_hexdump(b"abcdefg\nABCDEFG\0", 0),
-			"61 62 63 64 65 66 67 0a 41 42 43 44 45 46 47 00  abcdefg.ABCDEFG.\n"
+			"0000: 61 62 63 64 65 66 67 0a 41 42 43 44 45 46 47 00  abcdefg.ABCDEFG.\n"
 		);
 		assert_eq!(
 			get_hexdump(b"abcdefg\nABCDEFG\0", 16),
-			"61 62 63 64 65 66 67 0a 41 42 43 44 45 46 47 00  abcdefg.ABCDEFG.\n"
+			"0000: 61 62 63 64 65 66 67 0a 41 42 43 44 45 46 47 00  abcdefg.ABCDEFG.\n"
 		);
 		assert_eq!(
 			get_hexdump(b"abcdefg\nABCDEFG\0", 17),
-			"61 62 63 64 65 66 67 0a 41 42 43 44 45 46 47 00     abcdefg.ABCDEFG.\n"
+			"0000: 61 62 63 64 65 66 67 0a 41 42 43 44 45 46 47 00     abcdefg.ABCDEFG.\n"
 		);
 		assert_eq!(
 			get_hexdump(b"abcdefg\nABCDEFG\0", 8),
 			concat!(
-				"61 62 63 64 65 66 67 0a  abcdefg.\n",
-				"41 42 43 44 45 46 47 00  ABCDEFG.\n",
+				"0000: 61 62 63 64 65 66 67 0a  abcdefg.\n",
+				"0008: 41 42 43 44 45 46 47 00  ABCDEFG.\n",
 			)
 		);
 		assert_eq!(
 			get_hexdump(b"abcdefg\nABCDEFG\0!", 8),
 			concat!(
-				"61 62 63 64 65 66 67 0a  abcdefg.\n",
-				"41 42 43 44 45 46 47 00  ABCDEFG.\n",
-				"21                       !\n",
+				"0000: 61 62 63 64 65 66 67 0a  abcdefg.\n",
+				"0008: 41 42 43 44 45 46 47 00  ABCDEFG.\n",
+				"0010: 21                       !\n",
 			)
 		);
 		assert_eq!(
 			get_hexdump(b"123", 0),
-			"31 32 33  123\n"
+			"0000: 31 32 33  123\n"
 		);
 		assert_eq!(
 			get_hexdump(b"1", 1),
-			"31  1\n"
+			"0000: 31  1\n"
 		);
 		assert_eq!(
 			get_hexdump(b"1", 2),
-			"31     1\n"
+			"0000: 31     1\n"
 		);
 		assert_eq!(
 			get_hexdump(b"12", 2),
-			"31 32  12\n"
+			"0000: 31 32  12\n"
 		);
 		assert_eq!(
 			get_hexdump(b"12", 1),
 			concat!(
-				"31  1\n",
-				"32  2\n",
+				"0000: 31  1\n",
+				"0001: 32  2\n",
 			)
 		);
 	}
