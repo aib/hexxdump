@@ -2,39 +2,38 @@ pub const SUBSTITUTE_CHAR: char = '.';
 pub const MIN_ADDRESS_WIDTH: usize = 4;
 
 pub fn hexdump_to<W: std::io::Write>(mut output: W, bytes: &[u8], bytes_per_row: usize) -> std::io::Result<usize> {
-	let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
-	let min_address_width = min_hex_digits_for(bytes.len().saturating_sub(1));
-	let even_address_width = ((min_address_width + 1) / 2) * 2;
-	let address_width = even_address_width.max(MIN_ADDRESS_WIDTH);
-
 	let mut written = 0;
-	let mut offset = 0usize;
-	for row in bytes.chunks(chunk_size) {
-		let address = format!("{:0width$x}: ", offset, width = address_width);
+	for (address, row) in get_rows(bytes, bytes_per_row) {
 		written += output.write(address.as_bytes())?;
-		written += output.write(get_hexdump_row(row, bytes_per_row).as_bytes())?;
+		written += output.write(row.as_bytes())?;
 		written += output.write(&[10])?;
-		offset += chunk_size;
 	}
 	Ok(written)
 }
 
 pub fn get_hexdump(bytes: &[u8], bytes_per_row: usize) -> String {
+	let mut dump = String::new();
+	for (address, row) in get_rows(bytes, bytes_per_row) {
+		dump.push_str(&address);
+		dump.push_str(&row);
+		dump.push('\n');
+	}
+	dump
+}
+
+fn get_rows<'a>(bytes: &'a [u8], bytes_per_row: usize) -> impl Iterator<Item = (String, String)> + 'a {
 	let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
 	let min_address_width = min_hex_digits_for(bytes.len().saturating_sub(1));
 	let even_address_width = ((min_address_width + 1) / 2) * 2;
 	let address_width = even_address_width.max(MIN_ADDRESS_WIDTH);
 
-	let mut dump = String::new();
-	let mut offset = 0usize;
-	for row in bytes.chunks(chunk_size) {
+	let mut offset = 0;
+	bytes.chunks(chunk_size).map(move |bs| {
 		let address = format!("{:0width$x}: ", offset, width = address_width);
-		dump.push_str(&address);
-		dump.push_str(&get_hexdump_row(row, bytes_per_row));
-		dump.push('\n');
-		offset += chunk_size;
-	}
-	dump
+		let row = get_hexdump_row(bs, bytes_per_row);
+		offset += bytes_per_row;
+		(address, row)
+	})
 }
 
 pub fn get_hexdump_row(bytes: &[u8], bytes_per_row: usize) -> String {
