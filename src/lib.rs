@@ -41,26 +41,25 @@ fn get_rows<'a>(bytes: &'a [u8], bytes_per_row: usize) -> impl Iterator<Item = (
 }
 
 pub fn get_hexdump_row(bytes: &[u8], bytes_per_row: usize) -> String {
-	let (hex, view) = get_hexdump_tuple(bytes);
+	let mut row = String::new();
 
-	let padding_width = bytes_per_row.saturating_sub(bytes.len()) * 3;
+	for b in bytes {
+		row.push_str(&format!("{:02x} ", b));
+	}
 
-	let mut row = String::with_capacity(hex.len() + padding_width + view.len());
-	row.push_str(&hex);
-	row.push_str(&" ".repeat(padding_width));
-	row.push_str("  ");
-	row.push_str(&view);
+	for _ in 0..bytes_per_row.saturating_sub(bytes.len()) {
+		row.push(' ');
+		row.push(' ');
+		row.push(' ');
+	}
+
+	row.push(' ');
+
+	for b in bytes {
+		row.push(u8_to_display_char(*b));
+	}
+
 	row
-}
-
-pub fn get_hexdump_tuple(bytes: &[u8]) -> (String, String) {
-	let (mut hex, view) = bytes.iter().map(|b| {
-		(format!("{:02x} ", b), u8_to_display_char(*b))
-	}).unzip::<String, char, String, String>();
-
-	hex.pop();
-
-	(hex, view)
 }
 
 pub fn u8_to_display_char(u: u8) -> char {
@@ -233,25 +232,6 @@ mod tests {
 			get_hexdump_row(b" .\x00\x01\x02\x03", 9),
 			"20 2e 00 01 02 03            ....."
 		);
-	}
-	#[test]
-	fn test_get_hexdump_tuple() {
-		assert_eq!(
-			get_hexdump_tuple(b"Hello, World!"),
-			(
-				String::from("48 65 6c 6c 6f 2c 20 57 6f 72 6c 64 21"),
-				String::from("Hello, World!")
-			)
-		);
-
-		assert_eq!(
-			get_hexdump_tuple(b"123\nstr\0with \t n...a\x5c\x11\xff\x7f"),
-			(
-				String::from("31 32 33 0a 73 74 72 00 77 69 74 68 20 09 20 6e 2e 2e 2e 61 5c 11 ff 7f"),
-				String::from("123.str.with . n...a\\...")
-			)
-		);
-
 	}
 
 	#[test]
