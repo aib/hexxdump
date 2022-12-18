@@ -1,5 +1,4 @@
-pub const SUBSTITUTE_CHAR: char = '.';
-pub const MIN_ADDRESS_WIDTH: usize = 4;
+const MIN_ADDRESS_WIDTH: usize = 4;
 
 pub fn hexdump(bytes: &[u8]) {
 	hexdump_to(std::io::stdout(), bytes, 16).ok();
@@ -68,11 +67,11 @@ fn u8_to_display_char(u: u8) -> char {
 	} else if u == 32 {
 		' '
 	} else {
-		SUBSTITUTE_CHAR
+		'.'
 	}
 }
 
-pub fn min_hex_digits_for(num: usize) -> usize {
+fn min_hex_digits_for(num: usize) -> usize {
 	let mut digits = 1;
 	let mut max = 16;
 
