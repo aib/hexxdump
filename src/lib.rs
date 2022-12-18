@@ -28,7 +28,11 @@ pub fn get_hexdump<B: AsRef<[u8]>>(bytes: B, bytes_per_row: usize) -> String {
 	dump
 }
 
-pub fn get_hexdump_row(bytes: &[u8], bytes_per_row: usize) -> String {
+pub fn get_hexdump_row<B: AsRef<[u8]>>(bytes: B) -> String {
+	get_row(bytes.as_ref(), 0)
+}
+
+fn get_row(bytes: &[u8], bytes_per_row: usize) -> String {
 	let mut row = String::new();
 
 	for b in bytes {
@@ -59,7 +63,7 @@ fn get_rows<'a>(bytes: &'a [u8], bytes_per_row: usize) -> impl Iterator<Item = (
 	let mut offset = 0;
 	bytes.chunks(chunk_size).map(move |bs| {
 		let address = format!("{:0width$x}: ", offset, width = address_width);
-		let row = get_hexdump_row(bs, bytes_per_row);
+		let row = get_row(bs, bytes_per_row);
 		offset += bytes_per_row;
 		(address, row)
 	})
@@ -203,37 +207,21 @@ mod tests {
 				"0001: 32  2\n",
 			)
 		);
+		assert_eq!(
+			get_hexdump(b"123", 6),
+			"0000: 31 32 33           123\n"
+		);
 	}
 
 	#[test]
 	fn test_get_hexdump_row() {
 		assert_eq!(
-			get_hexdump_row(b"123", 0),
+			get_hexdump_row(b"123"),
 			"31 32 33  123"
 		);
 		assert_eq!(
-			get_hexdump_row(b"123", 1),
-			"31 32 33  123"
-		);
-		assert_eq!(
-			get_hexdump_row(b"123", 2),
-			"31 32 33  123"
-		);
-		assert_eq!(
-			get_hexdump_row(b"123", 3),
-			"31 32 33  123"
-		);
-		assert_eq!(
-			get_hexdump_row(b"123", 4),
-			"31 32 33     123"
-		);
-		assert_eq!(
-			get_hexdump_row(b"123", 5),
-			"31 32 33        123"
-		);
-		assert_eq!(
-			get_hexdump_row(b" .\x00\x01\x02\x03", 9),
-			"20 2e 00 01 02 03            ....."
+			get_hexdump_row(b" .\x00\x01\x02\x03"),
+			"20 2e 00 01 02 03   ....."
 		);
 	}
 
