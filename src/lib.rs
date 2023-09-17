@@ -59,12 +59,28 @@ impl Hexxdump {
 		}
 	}
 
+	pub fn get_hex_values(&self, bytes: &[u8]) -> String {
+		let mut vals = String::with_capacity(bytes.len() * 3);
+		for b in bytes {
+			vals.push_str(&format!("{:02x} ", b));
+		}
+		vals.pop();
+		vals
+	}
+
+	pub fn get_characters(&self, bytes: &[u8]) -> String {
+		let mut chars = String::with_capacity(bytes.len());
+		for b in bytes {
+			chars.push(self.byte_to_char(*b));
+		}
+		chars
+	}
+
 	fn get_row(&self, bytes: &[u8], bytes_per_row: usize) -> String {
 		let mut row = String::new();
 
-		for b in bytes {
-			row.push_str(&format!("{:02x} ", b));
-		}
+		row.push_str(&self.get_hex_values(bytes));
+		row.push(' ');
 
 		for _ in 0..bytes_per_row.saturating_sub(bytes.len()) {
 			row.push(' ');
@@ -73,10 +89,7 @@ impl Hexxdump {
 		}
 
 		row.push(' ');
-
-		for b in bytes {
-			row.push(self.byte_to_char(*b));
-		}
+		row.push_str(&self.get_characters(bytes));
 
 		row
 	}
