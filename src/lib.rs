@@ -2,83 +2,109 @@ mod util;
 
 const MIN_ADDRESS_WIDTH: usize = 4;
 
+pub const DEFAULT: Hexxdump = Hexxdump {};
+
+pub struct Hexxdump {}
+
+impl Hexxdump {
+	pub fn hexdump<B: AsRef<[u8]>>(&self, bytes: B) {
+		hexdump_to(std::io::stdout(), bytes, 16).ok();
+	}
+
+	pub fn hexdump_with_width<B: AsRef<[u8]>>(&self, bytes: B, bytes_per_row: usize) {
+		hexdump_to(std::io::stdout(), bytes, bytes_per_row).ok();
+	}
+
+	pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(&self, mut output: W, bytes: B, bytes_per_row: usize) -> std::io::Result<usize> {
+		let mut written = 0;
+		for (address, row) in self.get_rows(bytes.as_ref(), bytes_per_row) {
+			written += output.write(address.as_bytes())?;
+			written += output.write(row.as_bytes())?;
+			written += output.write(&[10])?;
+		}
+		Ok(written)
+	}
+
+	pub fn get_hexdump<B: AsRef<[u8]>>(&self, bytes: B, bytes_per_row: usize) -> String {
+		let mut dump = String::new();
+		for (address, row) in self.get_rows(bytes.as_ref(), bytes_per_row) {
+			dump.push_str(&address);
+			dump.push_str(&row);
+			dump.push('\n');
+		}
+		dump
+	}
+
+	pub fn get_hexdump_row<B: AsRef<[u8]>>(&self, bytes: B) -> String {
+		self.get_row(bytes.as_ref(), 0)
+	}
+
+	fn get_row(&self, bytes: &[u8], bytes_per_row: usize) -> String {
+		let mut row = String::new();
+
+		for b in bytes {
+			row.push_str(&format!("{:02x} ", b));
+		}
+
+		for _ in 0..bytes_per_row.saturating_sub(bytes.len()) {
+			row.push(' ');
+			row.push(' ');
+			row.push(' ');
+		}
+
+		row.push(' ');
+
+		for b in bytes {
+			row.push(self.u8_to_display_char(*b));
+		}
+
+		row
+	}
+
+	fn get_rows<'a>(&'a self, bytes: &'a [u8], bytes_per_row: usize) -> impl Iterator<Item = (String, String)> + 'a {
+		let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
+		let min_address_width = util::min_hex_digits_for(bytes.len().saturating_sub(1));
+		let even_address_width = ((min_address_width + 1) / 2) * 2;
+		let address_width = even_address_width.max(MIN_ADDRESS_WIDTH);
+
+		let mut offset = 0;
+		bytes.chunks(chunk_size).map(move |bs| {
+			let address = format!("{:0width$x}: ", offset, width = address_width);
+			let row = self.get_row(bs, bytes_per_row);
+			offset += bytes_per_row;
+			(address, row)
+		})
+	}
+
+	fn u8_to_display_char(&self, u: u8) -> char {
+		if u.is_ascii_graphic() {
+			char::from(u)
+		} else if u == 32 {
+			' '
+		} else {
+			'.'
+		}
+	}
+}
+
 pub fn hexdump<B: AsRef<[u8]>>(bytes: B) {
-	hexdump_to(std::io::stdout(), bytes, 16).ok();
+	DEFAULT.hexdump(bytes);
 }
 
 pub fn hexdump_with_width<B: AsRef<[u8]>>(bytes: B, bytes_per_row: usize) {
-	hexdump_to(std::io::stdout(), bytes, bytes_per_row).ok();
+	DEFAULT.hexdump_with_width(bytes, bytes_per_row);
 }
 
-pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(mut output: W, bytes: B, bytes_per_row: usize) -> std::io::Result<usize> {
-	let mut written = 0;
-	for (address, row) in get_rows(bytes.as_ref(), bytes_per_row) {
-		written += output.write(address.as_bytes())?;
-		written += output.write(row.as_bytes())?;
-		written += output.write(&[10])?;
-	}
-	Ok(written)
+pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(output: W, bytes: B, bytes_per_row: usize) -> std::io::Result<usize> {
+	DEFAULT.hexdump_to(output, bytes, bytes_per_row)
 }
 
 pub fn get_hexdump<B: AsRef<[u8]>>(bytes: B, bytes_per_row: usize) -> String {
-	let mut dump = String::new();
-	for (address, row) in get_rows(bytes.as_ref(), bytes_per_row) {
-		dump.push_str(&address);
-		dump.push_str(&row);
-		dump.push('\n');
-	}
-	dump
+	DEFAULT.get_hexdump(bytes, bytes_per_row)
 }
 
 pub fn get_hexdump_row<B: AsRef<[u8]>>(bytes: B) -> String {
-	get_row(bytes.as_ref(), 0)
-}
-
-fn get_row(bytes: &[u8], bytes_per_row: usize) -> String {
-	let mut row = String::new();
-
-	for b in bytes {
-		row.push_str(&format!("{:02x} ", b));
-	}
-
-	for _ in 0..bytes_per_row.saturating_sub(bytes.len()) {
-		row.push(' ');
-		row.push(' ');
-		row.push(' ');
-	}
-
-	row.push(' ');
-
-	for b in bytes {
-		row.push(u8_to_display_char(*b));
-	}
-
-	row
-}
-
-fn get_rows<'a>(bytes: &'a [u8], bytes_per_row: usize) -> impl Iterator<Item = (String, String)> + 'a {
-	let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
-	let min_address_width = util::min_hex_digits_for(bytes.len().saturating_sub(1));
-	let even_address_width = ((min_address_width + 1) / 2) * 2;
-	let address_width = even_address_width.max(MIN_ADDRESS_WIDTH);
-
-	let mut offset = 0;
-	bytes.chunks(chunk_size).map(move |bs| {
-		let address = format!("{:0width$x}: ", offset, width = address_width);
-		let row = get_row(bs, bytes_per_row);
-		offset += bytes_per_row;
-		(address, row)
-	})
-}
-
-fn u8_to_display_char(u: u8) -> char {
-	if u.is_ascii_graphic() {
-		char::from(u)
-	} else if u == 32 {
-		' '
-	} else {
-		'.'
-	}
+	DEFAULT.get_hexdump_row(bytes)
 }
 
 #[cfg(test)]
