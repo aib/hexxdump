@@ -20,7 +20,9 @@ impl Hexxdump {
 	pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(&self, mut output: W, bytes: B) -> std::io::Result<usize> {
 		let mut written = 0;
 		for (address, row) in self.get_rows(bytes.as_ref()) {
-			written += output.write(address.as_bytes())?;
+			if self.config.show_address {
+				written += output.write(address.as_bytes())?;
+			}
 			written += output.write(row.as_bytes())?;
 			written += output.write(&[b'\n'])?;
 		}
@@ -30,7 +32,9 @@ impl Hexxdump {
 	pub fn get_hexdump<B: AsRef<[u8]>>(&self, bytes: B) -> String {
 		let mut dump = String::new();
 		for (address, row) in self.get_rows(bytes.as_ref()) {
-			dump.push_str(&address);
+			if self.config.show_address {
+				dump.push_str(&address);
+			}
 			dump.push_str(&row);
 			dump.push('\n');
 		}
@@ -79,17 +83,22 @@ impl Hexxdump {
 	fn get_row(&self, bytes: &[u8], bytes_per_row: usize) -> String {
 		let mut row = String::new();
 
-		row.push_str(&self.get_hex_values(bytes));
-		row.push(' ');
+		if self.config.show_hex_values {
+			row.push_str(&self.get_hex_values(bytes));
+			row.push(' ');
 
-		for _ in 0..bytes_per_row.saturating_sub(bytes.len()) {
-			row.push(' ');
-			row.push(' ');
+			for _ in 0..bytes_per_row.saturating_sub(bytes.len()) {
+				row.push(' ');
+				row.push(' ');
+				row.push(' ');
+			}
+
 			row.push(' ');
 		}
 
-		row.push(' ');
-		row.push_str(&self.get_characters(bytes));
+		if self.config.show_characters {
+			row.push_str(&self.get_characters(bytes));
+		}
 
 		row
 	}

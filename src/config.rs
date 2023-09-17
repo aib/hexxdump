@@ -1,6 +1,11 @@
+use crate::Hexxdump;
+
 pub const DEFAULT: Config = Config {
 	bytes_per_row: 16,
 	min_address_width: 4,
+	show_address: true,
+	show_hex_values: true,
+	show_characters: true,
 	use_control_pictures: false,
 	use_control_picture_for_space: false,
 	substitute_character: '.',
@@ -10,6 +15,9 @@ pub const DEFAULT: Config = Config {
 pub struct Config {
 	pub bytes_per_row: usize,
 	pub min_address_width: usize,
+	pub show_address: bool,
+	pub show_hex_values: bool,
+	pub show_characters: bool,
 	pub use_control_pictures: bool,
 	pub use_control_picture_for_space: bool,
 	pub substitute_character: char,
@@ -25,6 +33,36 @@ impl Config {
 
 	pub const fn min_address_width(mut self, min_address_width: usize) -> Self {
 		self.min_address_width = min_address_width;
+		self
+	}
+
+	pub const fn show_address(mut self) -> Self {
+		self.show_address = true;
+		self
+	}
+
+	pub const fn hide_address(mut self) -> Self {
+		self.show_address = false;
+		self
+	}
+
+	pub const fn show_hex_values(mut self) -> Self {
+		self.show_hex_values = true;
+		self
+	}
+
+	pub const fn hide_hex_values(mut self) -> Self {
+		self.show_hex_values = false;
+		self
+	}
+
+	pub const fn show_characters(mut self) -> Self {
+		self.show_characters = true;
+		self
+	}
+
+	pub const fn hide_characters(mut self) -> Self {
+		self.show_characters = false;
 		self
 	}
 
