@@ -1,33 +1,35 @@
 mod util;
+pub mod config;
 
-const MIN_ADDRESS_WIDTH: usize = 4;
+pub const DEFAULT: Hexxdump = Hexxdump::with_config(config::DEFAULT);
 
-pub const DEFAULT: Hexxdump = Hexxdump {};
-
-pub struct Hexxdump {}
+#[derive(Clone, Debug)]
+pub struct Hexxdump {
+	config: config::Config,
+}
 
 impl Hexxdump {
+	pub const fn with_config(config: config::Config) -> Self {
+		Self { config }
+	}
+
 	pub fn hexdump<B: AsRef<[u8]>>(&self, bytes: B) {
-		hexdump_to(std::io::stdout(), bytes, 16).ok();
+		self.hexdump_to(std::io::stdout(), bytes).ok();
 	}
 
-	pub fn hexdump_with_width<B: AsRef<[u8]>>(&self, bytes: B, bytes_per_row: usize) {
-		hexdump_to(std::io::stdout(), bytes, bytes_per_row).ok();
-	}
-
-	pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(&self, mut output: W, bytes: B, bytes_per_row: usize) -> std::io::Result<usize> {
+	pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(&self, mut output: W, bytes: B) -> std::io::Result<usize> {
 		let mut written = 0;
-		for (address, row) in self.get_rows(bytes.as_ref(), bytes_per_row) {
+		for (address, row) in self.get_rows(bytes.as_ref()) {
 			written += output.write(address.as_bytes())?;
 			written += output.write(row.as_bytes())?;
-			written += output.write(&[10])?;
+			written += output.write(&[b'\n'])?;
 		}
 		Ok(written)
 	}
 
-	pub fn get_hexdump<B: AsRef<[u8]>>(&self, bytes: B, bytes_per_row: usize) -> String {
+	pub fn get_hexdump<B: AsRef<[u8]>>(&self, bytes: B) -> String {
 		let mut dump = String::new();
-		for (address, row) in self.get_rows(bytes.as_ref(), bytes_per_row) {
+		for (address, row) in self.get_rows(bytes.as_ref()) {
 			dump.push_str(&address);
 			dump.push_str(&row);
 			dump.push('\n');
@@ -37,6 +39,24 @@ impl Hexxdump {
 
 	pub fn get_hexdump_row<B: AsRef<[u8]>>(&self, bytes: B) -> String {
 		self.get_row(bytes.as_ref(), 0)
+	}
+
+	pub fn byte_to_char(&self, byte: u8) -> char {
+		if byte.is_ascii_graphic() {
+			char::from(byte)
+		} else if byte == b' ' {
+			if self.config.use_control_picture_for_space { '␠' } else { ' ' }
+		} else {
+			if byte < 32 && self.config.use_control_pictures {
+				['␀', '␁', '␂', '␃', '␄', '␅', '␆', '␇', '␈', '␉', '␊', '␋', '␌', '␍', '␎', '␏',
+				 '␐', '␑', '␒', '␓', '␔', '␕', '␖', '␗', '␘', '␙', '␚', '␛', '␜', '␝', '␞', '␟']
+					 [byte as usize]
+			} else if byte == 127 && self.config.use_control_pictures {
+				'␡'
+			} else {
+				self.config.substitute_character
+			}
+		}
 	}
 
 	fn get_row(&self, bytes: &[u8], bytes_per_row: usize) -> String {
@@ -55,17 +75,18 @@ impl Hexxdump {
 		row.push(' ');
 
 		for b in bytes {
-			row.push(self.u8_to_display_char(*b));
+			row.push(self.byte_to_char(*b));
 		}
 
 		row
 	}
 
-	fn get_rows<'a>(&'a self, bytes: &'a [u8], bytes_per_row: usize) -> impl Iterator<Item = (String, String)> + 'a {
+	fn get_rows<'a>(&'a self, bytes: &'a [u8]) -> impl Iterator<Item = (String, String)> + 'a {
+		let bytes_per_row = self.config.bytes_per_row;
 		let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
 		let min_address_width = util::min_hex_digits_for(bytes.len().saturating_sub(1));
 		let even_address_width = ((min_address_width + 1) / 2) * 2;
-		let address_width = even_address_width.max(MIN_ADDRESS_WIDTH);
+		let address_width = even_address_width.max(self.config.min_address_width);
 
 		let mut offset = 0;
 		bytes.chunks(chunk_size).map(move |bs| {
@@ -75,32 +96,18 @@ impl Hexxdump {
 			(address, row)
 		})
 	}
-
-	fn u8_to_display_char(&self, u: u8) -> char {
-		if u.is_ascii_graphic() {
-			char::from(u)
-		} else if u == 32 {
-			' '
-		} else {
-			'.'
-		}
-	}
 }
 
 pub fn hexdump<B: AsRef<[u8]>>(bytes: B) {
-	DEFAULT.hexdump(bytes);
+	DEFAULT.hexdump(bytes)
 }
 
-pub fn hexdump_with_width<B: AsRef<[u8]>>(bytes: B, bytes_per_row: usize) {
-	DEFAULT.hexdump_with_width(bytes, bytes_per_row);
+pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(output: W, bytes: B) -> std::io::Result<usize> {
+	DEFAULT.hexdump_to(output, bytes)
 }
 
-pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(output: W, bytes: B, bytes_per_row: usize) -> std::io::Result<usize> {
-	DEFAULT.hexdump_to(output, bytes, bytes_per_row)
-}
-
-pub fn get_hexdump<B: AsRef<[u8]>>(bytes: B, bytes_per_row: usize) -> String {
-	DEFAULT.get_hexdump(bytes, bytes_per_row)
+pub fn get_hexdump<B: AsRef<[u8]>>(bytes: B) -> String {
+	DEFAULT.get_hexdump(bytes)
 }
 
 pub fn get_hexdump_row<B: AsRef<[u8]>>(bytes: B) -> String {
@@ -118,10 +125,10 @@ mod tests {
 	#[test]
 	fn test_hexdump_to_buffer() {
 		let bs = get_rep_bytes(0x200);
-		let dump_str = get_hexdump(&bs, 20);
+		let dump_str = get_hexdump(&bs);
 
 		let mut out_buf = std::io::BufWriter::new(Vec::new());
-		let written = hexdump_to(&mut out_buf, &bs, 20).unwrap();
+		let written = hexdump_to(&mut out_buf, &bs).unwrap();
 
 		assert_eq!(dump_str.as_bytes(), out_buf.buffer());
 		assert_eq!(dump_str.len(), written);
@@ -129,7 +136,8 @@ mod tests {
 
 	#[test]
 	fn test_64k_hexdumps() {
-		let dump_64k = get_hexdump(&get_rep_bytes(0x10000), 8);
+		let hd8 = Hexxdump::with_config(config::DEFAULT.bytes_per_row(8));
+		let dump_64k = hd8.get_hexdump(&get_rep_bytes(0x10000));
 		let lines_64k: Vec<&str> = dump_64k.lines().collect();
 
 		assert_eq!(lines_64k[0x0000], "0000: 00 01 02 03 04 05 06 07  ........");
@@ -137,7 +145,7 @@ mod tests {
 		assert_eq!(lines_64k[0x1fe6], "ff30: 30 31 32 33 34 35 36 37  01234567");
 		assert_eq!(lines_64k[0x1fff], "fff8: f8 f9 fa fb fc fd fe ff  ........");
 
-		let dump_64k1 = get_hexdump(&get_rep_bytes(0x10001), 8);
+		let dump_64k1 = hd8.get_hexdump(&get_rep_bytes(0x10001));
 		let lines_64k1: Vec<&str> = dump_64k1.lines().collect();
 
 		assert_eq!(lines_64k1[0x0000], "000000: 00 01 02 03 04 05 06 07  ........");
@@ -151,7 +159,7 @@ mod tests {
 
 	#[test]
 	fn test_1m_hexdumps() {
-		let dump_1m = get_hexdump(&get_rep_bytes(0x100000), 16);
+		let dump_1m = get_hexdump(&get_rep_bytes(0x100000));
 		let lines_1m: Vec<&str> = dump_1m.lines().collect();
 
 		assert_eq!(lines_1m[0x0000], "000000: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  ................");
@@ -159,7 +167,8 @@ mod tests {
 		assert_eq!(lines_1m[0x1000], "010000: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f  ................");
 		assert_eq!(lines_1m[0xffff], "0ffff0: f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb fc fd fe ff  ................");
 
-		let dump_1m_32 = get_hexdump(&get_rep_bytes(0x100000), 32);
+		let hd32 = Hexxdump::with_config(config::DEFAULT.bytes_per_row(32));
+		let dump_1m_32 = hd32.get_hexdump(&get_rep_bytes(0x100000));
 		let lines_1m_32: Vec<&str> = dump_1m_32.lines().collect();
 
 		assert_eq!(lines_1m_32[0x0000], "000000: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f  ................................");
@@ -171,6 +180,11 @@ mod tests {
 
 	#[test]
 	fn test_get_hexdump() {
+		let get_hexdump = |bs: &[u8], bytes_per_row: usize| {
+			let hd = Hexxdump::with_config(config::DEFAULT.bytes_per_row(bytes_per_row));
+			hd.get_hexdump(bs)
+		};
+
 		assert_eq!(
 			get_hexdump(b"abcdefg\nABCDEFG\0", 0),
 			"0000: 61 62 63 64 65 66 67 0a 41 42 43 44 45 46 47 00  abcdefg.ABCDEFG.\n"
