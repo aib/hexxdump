@@ -26,6 +26,8 @@ pub struct Config {
 impl Config {
 	pub const fn new() -> Self { DEFAULT }
 
+	pub const fn into_hexxdump(self) -> Hexxdump { Hexxdump::with_config(self) }
+
 	pub const fn bytes_per_row(mut self, bytes_per_row: usize) -> Self {
 		self.bytes_per_row = bytes_per_row;
 		self
