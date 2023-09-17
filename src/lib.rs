@@ -1,3 +1,5 @@
+mod util;
+
 const MIN_ADDRESS_WIDTH: usize = 4;
 
 pub fn hexdump<B: AsRef<[u8]>>(bytes: B) {
@@ -56,7 +58,7 @@ fn get_row(bytes: &[u8], bytes_per_row: usize) -> String {
 
 fn get_rows<'a>(bytes: &'a [u8], bytes_per_row: usize) -> impl Iterator<Item = (String, String)> + 'a {
 	let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
-	let min_address_width = min_hex_digits_for(bytes.len().saturating_sub(1));
+	let min_address_width = util::min_hex_digits_for(bytes.len().saturating_sub(1));
 	let even_address_width = ((min_address_width + 1) / 2) * 2;
 	let address_width = even_address_width.max(MIN_ADDRESS_WIDTH);
 
@@ -77,20 +79,6 @@ fn u8_to_display_char(u: u8) -> char {
 	} else {
 		'.'
 	}
-}
-
-fn min_hex_digits_for(num: usize) -> usize {
-	let mut digits = 1;
-	let mut max = 16;
-
-	while max < usize::MAX {
-		if num < max {
-			break;
-		}
-		max = max.saturating_mul(16);
-		digits += 1;
-	}
-	digits
 }
 
 #[cfg(test)]
@@ -223,19 +211,5 @@ mod tests {
 			get_hexdump_row(b" .\x00\x01\x02\x03"),
 			"20 2e 00 01 02 03   ....."
 		);
-	}
-
-	#[test]
-	fn test_min_hex_digits_for() {
-		assert_eq!(min_hex_digits_for(0x0), 1);
-		assert_eq!(min_hex_digits_for(0x1), 1);
-		assert_eq!(min_hex_digits_for(0xf), 1);
-		assert_eq!(min_hex_digits_for(0x10), 2);
-		assert_eq!(min_hex_digits_for(0xff), 2);
-		assert_eq!(min_hex_digits_for(0x100), 3);
-		assert_eq!(min_hex_digits_for(0xfff), 3);
-		assert_eq!(min_hex_digits_for(0x1000), 4);
-		assert_eq!(min_hex_digits_for(0xffff), 4);
-		assert_eq!(min_hex_digits_for(usize::MAX), (usize::BITS / 4) as usize);
 	}
 }
