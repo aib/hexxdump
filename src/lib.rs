@@ -41,10 +41,6 @@ impl Hexxdump {
 		dump
 	}
 
-	pub fn get_hexdump_row<B: AsRef<[u8]>>(&self, bytes: B) -> String {
-		self.get_row(bytes.as_ref(), 0)
-	}
-
 	pub fn byte_to_char(&self, byte: u8) -> char {
 		if byte.is_ascii_graphic() {
 			char::from(byte)
@@ -130,10 +126,6 @@ pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(output: W, bytes: B) -> std
 
 pub fn get_hexdump<B: AsRef<[u8]>>(bytes: B) -> String {
 	DEFAULT.get_hexdump(bytes)
-}
-
-pub fn get_hexdump_row<B: AsRef<[u8]>>(bytes: B) -> String {
-	DEFAULT.get_hexdump_row(bytes)
 }
 
 #[cfg(test)]
@@ -260,18 +252,6 @@ mod tests {
 		assert_eq!(
 			get_hexdump(b"123", 6),
 			"0000: 31 32 33           123\n"
-		);
-	}
-
-	#[test]
-	fn test_get_hexdump_row() {
-		assert_eq!(
-			get_hexdump_row(b"123"),
-			"31 32 33  123"
-		);
-		assert_eq!(
-			get_hexdump_row(b" .\x00\x01\x02\x03"),
-			"20 2e 00 01 02 03   ....."
 		);
 	}
 }
