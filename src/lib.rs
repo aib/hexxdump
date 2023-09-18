@@ -1,22 +1,31 @@
+//! `hexxdump` is a configurable tool for generating hex dumps
+
 mod util;
 pub mod config;
 
+/// A pre-made Hexxdump object with a default configuration ([`config::DEFAULT`])
 pub const DEFAULT: Hexxdump = Hexxdump::with_config(config::DEFAULT);
 
+/// A hex dumper object that contains a given configuration ([`config::Config`])
 #[derive(Clone, Debug)]
 pub struct Hexxdump {
 	config: config::Config,
 }
 
 impl Hexxdump {
+	/// Create a [`Hexxdump`] object using the given [`config::Config`] object
 	pub const fn with_config(config: config::Config) -> Self {
 		Self { config }
 	}
 
+	/// Writes the hex dump of `bytes` to [`stdout`](`std::io::Stdout`)
+	///
+	/// Equivalent to calling [`hexdump_to`]`(std::io::stdout(), bytes)`
 	pub fn hexdump<B: AsRef<[u8]>>(&self, bytes: B) {
 		self.hexdump_to(std::io::stdout(), bytes).ok();
 	}
 
+	/// Writes the hex dump of `bytes` to the given byte sink, `output`
 	pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(&self, mut output: W, bytes: B) -> std::io::Result<usize> {
 		let mut written = 0;
 		for (address, row) in self.get_rows(bytes.as_ref()) {
@@ -29,6 +38,7 @@ impl Hexxdump {
 		Ok(written)
 	}
 
+	/// Returns the hex dump of `bytes` as a `String`
 	pub fn get_hexdump<B: AsRef<[u8]>>(&self, bytes: B) -> String {
 		let mut dump = String::new();
 		for (address, row) in self.get_rows(bytes.as_ref()) {
@@ -41,6 +51,7 @@ impl Hexxdump {
 		dump
 	}
 
+	/// Utility function to convert a given `byte` to its `char` representatio
 	pub fn byte_to_char(&self, byte: u8) -> char {
 		if byte.is_ascii_graphic() {
 			char::from(byte)
@@ -59,6 +70,9 @@ impl Hexxdump {
 		}
 	}
 
+	/// Utility function to convert the given `bytes` into a string of hex values
+	///
+	/// This would be the same output as the middle column of a single-row hex dump
 	pub fn get_hex_values(&self, bytes: &[u8]) -> String {
 		let mut vals = String::with_capacity(bytes.len() * 3);
 		for b in bytes {
@@ -68,6 +82,9 @@ impl Hexxdump {
 		vals
 	}
 
+	/// Utility function to convert the given `bytes` into a string of characters
+	///
+	/// This would be the same output as the right column of a single-row hex dump
 	pub fn get_characters(&self, bytes: &[u8]) -> String {
 		let mut chars = String::with_capacity(bytes.len());
 		for b in bytes {
@@ -116,14 +133,29 @@ impl Hexxdump {
 	}
 }
 
+/// Writes the hex dump of `bytes` to stdout with a default configuration
+///
+/// Equivalent to calling [`DEFAULT`].[`hexdump`]`(bytes)`
+///
+/// [`hexdump`]: `Hexxdump::hexdump`
 pub fn hexdump<B: AsRef<[u8]>>(bytes: B) {
 	DEFAULT.hexdump(bytes)
 }
 
+/// Writes the hexdump of `bytes` to the given byte sink `output` with a default configuration
+///
+/// Equivalent to calling [`DEFAULT`].[`hexdump_to`]`(output, bytes)`
+///
+/// [`hexdump_to`]: `Hexxdump::hexdump_to`
 pub fn hexdump_to<W: std::io::Write, B: AsRef<[u8]>>(output: W, bytes: B) -> std::io::Result<usize> {
 	DEFAULT.hexdump_to(output, bytes)
 }
 
+/// Returns the hexdump of `bytes` as a `String`, with a default configuration
+///
+/// Equivalent to calling [`DEFAULT`].[`get_hexdump`]`(bytes)`
+///
+/// [`get_hexdump`]: `Hexxdump::get_hexdump`
 pub fn get_hexdump<B: AsRef<[u8]>>(bytes: B) -> String {
 	DEFAULT.get_hexdump(bytes)
 }
