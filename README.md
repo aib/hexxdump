@@ -1,6 +1,6 @@
 # Hexxdump
 
-Simple, single byte xxd-style hexdumps
+A simple, configurable tool for generating hex dumps
 
 ## Usage
 
@@ -27,3 +27,5 @@ hexxdump::hexdump(bytes);
 00e0: e0 e1 e2 e3 e4 e5 e6 e7 e8 e9 ea eb ec ed ee ef  ................
 00f0: f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb fc fd fe ff  ................
 ```
+
+See [`examples/demo.rs`](examples/demo.rs) for more examples.
