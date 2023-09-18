@@ -2,7 +2,7 @@ use crate::Hexxdump;
 
 pub const DEFAULT: Config = Config {
 	bytes_per_row: 16,
-	min_address_width: 4,
+	address_width: 4,
 	show_address: true,
 	show_hex_values: true,
 	show_characters: true,
@@ -14,7 +14,7 @@ pub const DEFAULT: Config = Config {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Config {
 	pub bytes_per_row: usize,
-	pub min_address_width: usize,
+	pub address_width: usize,
 	pub show_address: bool,
 	pub show_hex_values: bool,
 	pub show_characters: bool,
@@ -33,8 +33,8 @@ impl Config {
 		self
 	}
 
-	pub const fn min_address_width(mut self, min_address_width: usize) -> Self {
-		self.min_address_width = min_address_width;
+	pub const fn address_width(mut self, address_width: usize) -> Self {
+		self.address_width = address_width;
 		self
 	}
 

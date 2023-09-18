@@ -102,9 +102,9 @@ impl Hexxdump {
 	fn get_rows<'a>(&'a self, bytes: &'a [u8]) -> impl Iterator<Item = (String, String)> + 'a {
 		let bytes_per_row = self.config.bytes_per_row;
 		let chunk_size = if bytes_per_row == 0 { usize::MAX } else { bytes_per_row };
-		let min_address_width = util::min_hex_digits_for(bytes.len().saturating_sub(1));
-		let even_address_width = ((min_address_width + 1) / 2) * 2;
-		let address_width = even_address_width.max(self.config.min_address_width);
+		let address_width = util::min_hex_digits_for(bytes.len().saturating_sub(1));
+		let even_address_width = ((address_width + 1) / 2) * 2;
+		let address_width = even_address_width.max(self.config.address_width);
 
 		let mut offset = 0;
 		bytes.chunks(chunk_size).map(move |bs| {

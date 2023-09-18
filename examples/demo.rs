@@ -21,7 +21,7 @@ fn main() {
 
 	println!("Extended address:");
 	hexxdump::config::DEFAULT
-		.min_address_width(8)
+		.address_width(8)
 		.into_hexxdump()
 		.hexdump(&bytes);
 	println!("");
