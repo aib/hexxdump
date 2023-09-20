@@ -8,6 +8,7 @@ keywords = ["hex", "dump", "hexdump"]
 categories = ["development-tools::debugging"]
 homepage = "https://github.com/aib/hexxdump"
 repository = "https://github.com/aib/hexxdump"
+documentation = "https://docs.rs/hexxdump"
 description = "A simple, configurable tool for generating hex dumps"
 readme = "README.md"
 
