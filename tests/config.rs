@@ -84,11 +84,11 @@ fn test_show_hex_values() {
 
 #[test]
 fn test_show_characters() {
-//	let hide = Config::new().address_width(2).bytes_per_row(8).show_characters(false).into_hexxdump();
+	let hide = Config::new().address_width(2).bytes_per_row(8).show_characters(false).into_hexxdump();
 	let show = Config::new().address_width(2).bytes_per_row(8).show_characters(true) .into_hexxdump();
 
 	assert_eq!("00: 48 65 6c 6c 6f           Hello\n", show.get_hexdump(b"Hello"));
-//	assert_eq!("00: 48 65 6c 6c 6f         \n",        hide.get_hexdump(b"Hello"));
+	assert_eq!("00: 48 65 6c 6c 6f         \n",        hide.get_hexdump(b"Hello"));
 }
 
 #[test]

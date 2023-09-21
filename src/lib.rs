@@ -105,7 +105,11 @@ impl Hexxdump {
 				row.push(' ');
 				row.push(' ');
 			}
+			row.pop();
+		}
 
+		if self.config.show_hex_values && self.config.show_characters {
+			row.push(' ');
 			row.push(' ');
 		}
 
