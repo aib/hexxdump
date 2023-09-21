@@ -7,14 +7,14 @@ fn main() {
 
 	println!("Control pictures:");
 	hexxdump::config::DEFAULT
-		.use_control_pictures()
+		.use_control_pictures(true)
 		.into_hexxdump()
 		.hexdump(&bytes);
 	println!("");
 
 	println!("No address:");
 	hexxdump::config::DEFAULT
-		.hide_address()
+		.show_address(false)
 		.into_hexxdump()
 		.hexdump(&bytes);
 	println!("");
@@ -29,7 +29,7 @@ fn main() {
 	println!("Character dump:");
 	hexxdump::config::DEFAULT
 		.bytes_per_row(64)
-		.hide_hex_values()
+		.show_hex_values(false)
 		.substitute_character('␦')
 		.into_hexxdump()
 		.hexdump(&bytes);
@@ -37,7 +37,7 @@ fn main() {
 
 	println!("Hex value dump:");
 	hexxdump::config::DEFAULT
-		.hide_characters()
+		.show_characters(false)
 		.bytes_per_row(32)
 		.into_hexxdump()
 		.hexdump(&bytes);

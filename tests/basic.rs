@@ -38,7 +38,7 @@ fn default_hexdump() {
 #[test]
 fn hexdump_with_control_pictures() {
 	let hexxdump = hexxdump::Hexxdump::with_config(
-		hexxdump::config::DEFAULT.use_control_pictures()
+		hexxdump::config::DEFAULT.use_control_pictures(true)
 	);
 	let bs = get_rep_bytes(0x100);
 	let expected_output = concat!(
@@ -72,7 +72,7 @@ fn hexdump_with_control_pictures() {
 #[test]
 fn hexdump_with_full_unicode() {
 	let hexxdump = hexxdump::Hexxdump::with_config(hexxdump::config::DEFAULT
-		.use_control_pictures()
+		.use_control_pictures(true)
 		.substitute_character('␦')
 	);
 	let bs = get_rep_bytes(0x100);

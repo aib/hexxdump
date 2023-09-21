@@ -44,58 +44,34 @@ impl Config {
 		self
 	}
 
-	/// Sets the address (left) column to be included in dumps
-	pub const fn show_address(mut self) -> Self {
-		self.show_address = true;
+	/// Sets whether the address (left) column is included in dumps
+	pub const fn show_address(mut self, show: bool) -> Self {
+		self.show_address = show;
 		self
 	}
 
-	/// Sets the address (left) column to be excluded from dumps
-	pub const fn hide_address(mut self) -> Self {
-		self.show_address = false;
+	/// Sets whether the hex values (middle) column is included in dumps
+	pub const fn show_hex_values(mut self, show: bool) -> Self {
+		self.show_hex_values = show;
 		self
 	}
 
-	/// Sets the hex values (middle) column to be included in dumps
-	pub const fn show_hex_values(mut self) -> Self {
-		self.show_hex_values = true;
+	/// Sets whether the characters (right) column is included in dumps
+	pub const fn show_characters(mut self, show: bool) -> Self {
+		self.show_characters = show;
 		self
 	}
 
-	/// Sets the hex values (middle) column to be excluded from dumps
-	pub const fn hide_hex_values(mut self) -> Self {
-		self.show_hex_values = false;
-		self
-	}
-
-	/// Sets the characters (right) column to be included in dumps
-	pub const fn show_characters(mut self) -> Self {
-		self.show_characters = true;
-		self
-	}
-
-	/// Sets the characters (right) column to be excluded from dumps
-	pub const fn hide_characters(mut self) -> Self {
-		self.show_characters = false;
-		self
-	}
-
-	/// Sets ASCII control characters (0 ~ 31) to be presented using the [`substitute character`](Self::substitute_character)
-	pub const fn dont_use_control_pictures(mut self) -> Self {
-		self.use_control_pictures = false;
-		self
-	}
-
-	/// Sets ASCII control characters (0 ~ 31) to be printed using Unicode characters from the "Control Pictures" block
-	pub const fn use_control_pictures(mut self) -> Self {
-		self.use_control_pictures = true;
+	/// Sets whether ASCII control characters (0 ~ 31) are printed using Unicode characters from the "Control Pictures" block or the [substitute character](Self::substitute_character)
+	pub const fn use_control_pictures(mut self, use_cp: bool) -> Self {
+		self.use_control_pictures = use_cp;
 		self
 	}
 
 	/// Sets the substitute character, the character printed to represent non-ASCII-printable bytes
 	///
 	/// The substitute character will be printed for non-ASCII (80 ~ 255) bytes.
-	/// It will also be printed for ASCII control characters (0 ~ 31) if [`dont_use_control_pictures`](Self::dont_use_control_pictures) is set.
+	/// It will also be printed for ASCII control characters (0 ~ 31) if [`use_control_pictures`](Self::use_control_pictures) is set to `false`.
 	///
 	/// Defaults to `'.'`
 	pub const fn substitute_character(mut self, substitute_character: char) -> Self {
