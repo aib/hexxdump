@@ -50,11 +50,11 @@ fn test_address_width() {
 
 	{
 		let a1 = Config::new().bytes_per_row(8).address_width(1).into_hexxdump();
-//		assert_eq!(
-//			concat!("0: 30 31 32 33 34 35 36 37  01234567\n",
-//			        "8: 38 39 61 62 63 64 65 66  89abcdef\n"),
-//			a1.get_hexdump(b"0123456789abcdef"),
-//		);
+		assert_eq!(
+			concat!("0: 30 31 32 33 34 35 36 37  01234567\n",
+			        "8: 38 39 61 62 63 64 65 66  89abcdef\n"),
+			a1.get_hexdump(b"0123456789abcdef"),
+		);
 		assert_eq!(
 			concat!("00: 30 31 32 33 34 35 36 37  01234567\n",
 			        "08: 38 39 61 62 63 64 65 66  89abcdef\n",
