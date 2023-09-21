@@ -62,6 +62,50 @@ fn test_address_width() {
 			a1.get_hexdump(b"0123456789abcdefg"),
 		);
 	}
+
+	{
+		let a2 = Config::new().bytes_per_row(8).address_width(2).into_hexxdump();
+		{
+			let dump = a2.get_hexdump((0..=255).collect::<Vec<_>>());
+			let d256l = dump.lines().collect::<Vec<_>>();
+			assert_eq!("00: 00 01 02 03 04 05 06 07  ........", d256l[0x00]);
+			assert_eq!("10: 10 11 12 13 14 15 16 17  ........", d256l[0x02]);
+			assert_eq!("f8: f8 f9 fa fb fc fd fe ff  ........", d256l[0x1f]);
+		}
+		{
+			let dump = a2.get_hexdump([(0..=255).collect::<Vec<_>>(), vec![42]].concat());
+			let d257l = dump.lines().collect::<Vec<_>>();
+			assert_eq!("0000: 00 01 02 03 04 05 06 07  ........", d257l[0x00]);
+			assert_eq!("0010: 10 11 12 13 14 15 16 17  ........", d257l[0x02]);
+			assert_eq!("00f8: f8 f9 fa fb fc fd fe ff  ........", d257l[0x1f]);
+			assert_eq!("0100: 2a                       *",        d257l[0x20]);
+		}
+	}
+
+	{
+		let a3 = Config::new().bytes_per_row(8).address_width(3).into_hexxdump();
+		{
+			let dump = a3.get_hexdump(
+				std::iter::repeat((0..=255).collect::<Vec<_>>()).flatten().take(4096).collect::<Vec<_>>()
+			);
+			let d4096l = dump.lines().collect::<Vec<_>>();
+			assert_eq!("000: 00 01 02 03 04 05 06 07  ........", d4096l[0x000]);
+			assert_eq!("0f8: f8 f9 fa fb fc fd fe ff  ........", d4096l[0x01f]);
+			assert_eq!("100: 00 01 02 03 04 05 06 07  ........", d4096l[0x020]);
+			assert_eq!("ff8: f8 f9 fa fb fc fd fe ff  ........", d4096l[0x1ff]);
+		}
+		{
+			let dump = a3.get_hexdump(
+				std::iter::repeat((0..=255).collect::<Vec<_>>()).flatten().take(4097).collect::<Vec<_>>()
+			);
+			let d4097l = dump.lines().collect::<Vec<_>>();
+			assert_eq!("0000: 00 01 02 03 04 05 06 07  ........", d4097l[0x000]);
+			assert_eq!("00f8: f8 f9 fa fb fc fd fe ff  ........", d4097l[0x01f]);
+			assert_eq!("0100: 00 01 02 03 04 05 06 07  ........", d4097l[0x020]);
+			assert_eq!("0ff8: f8 f9 fa fb fc fd fe ff  ........", d4097l[0x1ff]);
+			assert_eq!("1000: 00                       .",        d4097l[0x200]);
+		}
+	}
 }
 
 #[test]
