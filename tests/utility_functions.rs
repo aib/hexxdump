@@ -17,7 +17,7 @@ fn get_hex_values() {
 #[test]
 fn get_characters() {
 	let hexxdump = hexxdump::DEFAULT;
-	let hexxdump_with_cp = hexxdump::config::DEFAULT.use_full_control_pictures().into_hexxdump();
+	let hexxdump_with_cp = hexxdump::config::DEFAULT.use_control_pictures().into_hexxdump();
 
 	assert_eq!("", hexxdump        .get_characters(b""));
 	assert_eq!("", hexxdump_with_cp.get_characters(b""));
@@ -35,5 +35,5 @@ fn get_characters() {
 	assert_eq!("Hello␀", hexxdump_with_cp.get_characters(b"Hello\0"));
 
 	assert_eq!("Not.print able.!...", hexxdump        .get_characters(b"Not\tprint able\n!\x7f\x80\xff"));
-	assert_eq!("Not␉print␠able␊!␡..", hexxdump_with_cp.get_characters(b"Not\tprint able\n!\x7f\x80\xff"));
+	assert_eq!("Not␉print able␊!␡..", hexxdump_with_cp.get_characters(b"Not\tprint able\n!\x7f\x80\xff"));
 }

@@ -56,7 +56,7 @@ impl Hexxdump {
 		if byte.is_ascii_graphic() {
 			char::from(byte)
 		} else if byte == b' ' {
-			if self.config.use_control_picture_for_space { '␠' } else { ' ' }
+			' '
 		} else {
 			if byte < 32 && self.config.use_control_pictures {
 				['␀', '␁', '␂', '␃', '␄', '␅', '␆', '␇', '␈', '␉', '␊', '␋', '␌', '␍', '␎', '␏',

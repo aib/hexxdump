@@ -7,7 +7,7 @@ fn main() {
 
 	println!("Control pictures:");
 	hexxdump::config::DEFAULT
-		.use_full_control_pictures()
+		.use_control_pictures()
 		.into_hexxdump()
 		.hexdump(&bytes);
 	println!("");

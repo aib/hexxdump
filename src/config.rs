@@ -8,7 +8,6 @@ pub const DEFAULT: Config = Config {
 	show_hex_values: true,
 	show_characters: true,
 	use_control_pictures: false,
-	use_control_picture_for_space: false,
 	substitute_character: '.',
 };
 
@@ -32,9 +31,6 @@ pub struct Config {
 
 	/// Whether to present ASCII control bytes using characters from the Unicode "Control Pictures" block
 	pub use_control_pictures: bool,
-
-	/// Whether to present the ASCII space byte using the Unicode "Control Pictures" space character
-	pub use_control_picture_for_space: bool,
 
 	/// The character to present for non-ASCII and non-printable bytes
 	///
@@ -99,24 +95,15 @@ impl Config {
 		self
 	}
 
-	/// Sets `use_control_pictures` and `use_control_picture_for_space` to `false`
+	/// Sets `use_control_pictures` to `false`
 	pub const fn dont_use_control_pictures(mut self) -> Self {
 		self.use_control_pictures = false;
-		self.use_control_picture_for_space = false;
 		self
 	}
 
-	/// Sets `use_control_pictures` to `true`, `use_control_picture_for_space` to `false`
+	/// Sets `use_control_pictures` to `true`
 	pub const fn use_control_pictures(mut self) -> Self {
 		self.use_control_pictures = true;
-		self.use_control_picture_for_space = false;
-		self
-	}
-
-	/// Sets `use_control_pictures` and `use_control_picture_for_space` to `true`
-	pub const fn use_full_control_pictures(mut self) -> Self {
-		self.use_control_pictures = true;
-		self.use_control_picture_for_space = true;
 		self
 	}
 
