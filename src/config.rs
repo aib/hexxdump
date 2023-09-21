@@ -39,6 +39,8 @@ impl Config {
 	}
 
 	/// Sets the width (in hex digits) to use for the address
+	///
+	/// Note: If a dump requires more digits, they will be rounded up to a multiple of two
 	pub const fn address_width(mut self, address_width: usize) -> Self {
 		self.address_width = address_width;
 		self
