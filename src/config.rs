@@ -14,28 +14,13 @@ pub const DEFAULT: Config = Config {
 /// An object to build and store a [`Hexxdump`]'s configuration
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Config {
-	/// Number of bytes to show per row
-	pub bytes_per_row: usize,
-
-	/// The width (in hex digits) to use for the address column
-	pub address_width: usize,
-
-	/// Whether to show the address (left column)
-	pub show_address: bool,
-
-	/// Whether to show the hex values (middle column)
-	pub show_hex_values: bool,
-
-	/// Whether to show the characters (right column)
-	pub show_characters: bool,
-
-	/// Whether to present ASCII control bytes using characters from the Unicode "Control Pictures" block
-	pub use_control_pictures: bool,
-
-	/// The character to present for non-ASCII and non-printable bytes
-	///
-	/// ASCII control bytes are substituted if `use_control_pictures` is not set
-	pub substitute_character: char,
+	pub(super) bytes_per_row: usize,
+	pub(super) address_width: usize,
+	pub(super) show_address: bool,
+	pub(super) show_hex_values: bool,
+	pub(super) show_characters: bool,
+	pub(super) use_control_pictures: bool,
+	pub(super) substitute_character: char,
 }
 
 impl Config {
@@ -47,67 +32,72 @@ impl Config {
 	/// Equivalent to calling [`Hexxdump::with_config`]`(self)`
 	pub const fn into_hexxdump(self) -> Hexxdump { Hexxdump::with_config(self) }
 
-	/// Sets `bytes_per_row` to the given value
+	/// Sets the number of bytes to output per row
 	pub const fn bytes_per_row(mut self, bytes_per_row: usize) -> Self {
 		self.bytes_per_row = bytes_per_row;
 		self
 	}
 
-	/// Sets `address_width` to the given value
+	/// Sets the width (in hex digits) to use for the address
 	pub const fn address_width(mut self, address_width: usize) -> Self {
 		self.address_width = address_width;
 		self
 	}
 
-	/// Sets `show_address` to `true`
+	/// Sets the address (left) column to be included in dumps
 	pub const fn show_address(mut self) -> Self {
 		self.show_address = true;
 		self
 	}
 
-	/// Sets `show_address` to `false`
+	/// Sets the address (left) column to be excluded from dumps
 	pub const fn hide_address(mut self) -> Self {
 		self.show_address = false;
 		self
 	}
 
-	/// Sets `show_hex_values` to `true`
+	/// Sets the hex values (middle) column to be included in dumps
 	pub const fn show_hex_values(mut self) -> Self {
 		self.show_hex_values = true;
 		self
 	}
 
-	/// Sets `show_hex_values` to `false`
+	/// Sets the hex values (middle) column to be excluded from dumps
 	pub const fn hide_hex_values(mut self) -> Self {
 		self.show_hex_values = false;
 		self
 	}
 
-	/// Sets `show_characters` to `true`
+	/// Sets the characters (right) column to be included in dumps
 	pub const fn show_characters(mut self) -> Self {
 		self.show_characters = true;
 		self
 	}
 
-	/// Sets `show_characters` to `false`
+	/// Sets the characters (right) column to be excluded from dumps
 	pub const fn hide_characters(mut self) -> Self {
 		self.show_characters = false;
 		self
 	}
 
-	/// Sets `use_control_pictures` to `false`
+	/// Sets ASCII control characters (0 ~ 31) to be presented using the [`substitute character`](Self::substitute_character)
 	pub const fn dont_use_control_pictures(mut self) -> Self {
 		self.use_control_pictures = false;
 		self
 	}
 
-	/// Sets `use_control_pictures` to `true`
+	/// Sets ASCII control characters (0 ~ 31) to be printed using Unicode characters from the "Control Pictures" block
 	pub const fn use_control_pictures(mut self) -> Self {
 		self.use_control_pictures = true;
 		self
 	}
 
-	/// Sets `substitute_character` to the given value
+	/// Sets the substitute character, the character printed to represent non-ASCII-printable bytes
+	///
+	/// The substitute character will be printed for non-ASCII (80 ~ 255) bytes.
+	/// It will also be printed for ASCII control characters (0 ~ 31) if [`dont_use_control_pictures`](Self::dont_use_control_pictures) is set.
+	///
+	/// Defaults to `'.'`
 	pub const fn substitute_character(mut self, substitute_character: char) -> Self {
 		self.substitute_character = substitute_character;
 		self
