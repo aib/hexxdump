@@ -3,17 +3,17 @@
 mod util;
 pub mod config;
 
-/// A pre-made Hexxdump object with a default configuration ([`config::DEFAULT`])
+/// A pre-made Hexxdump with a [default configuration](config::DEFAULT)
 pub const DEFAULT: Hexxdump = Hexxdump::with_config(config::DEFAULT);
 
-/// A hex dumper object that contains a given configuration ([`config::Config`])
+/// A hex dumper with a given [configuration](config::Config)
 #[derive(Clone, Debug)]
 pub struct Hexxdump {
 	config: config::Config,
 }
 
 impl Hexxdump {
-	/// Create a [`Hexxdump`] object using the given [`config::Config`] object
+	/// Creates a [`Hexxdump`] using the given [`Config`](config::Config)
 	pub const fn with_config(config: config::Config) -> Self {
 		Self { config }
 	}
@@ -51,7 +51,7 @@ impl Hexxdump {
 		dump
 	}
 
-	/// Utility function to convert a given `byte` to its `char` representatio
+	/// Utility function to convert a given `byte` to its `char` representation
 	pub fn byte_to_char(&self, byte: u8) -> char {
 		if byte.is_ascii_graphic() {
 			char::from(byte)
@@ -72,7 +72,7 @@ impl Hexxdump {
 
 	/// Utility function to convert the given `bytes` into a string of hex values
 	///
-	/// This would be the same output as the middle column of a single-row hex dump
+	/// Returns the middle column of what would be a single-row hex dump
 	pub fn get_hex_values(&self, bytes: &[u8]) -> String {
 		let mut vals = String::with_capacity(bytes.len() * 3);
 		for b in bytes {
@@ -84,7 +84,7 @@ impl Hexxdump {
 
 	/// Utility function to convert the given `bytes` into a string of characters
 	///
-	/// This would be the same output as the right column of a single-row hex dump
+	/// Returns the the right column of what would be a single-row hex dump
 	pub fn get_characters(&self, bytes: &[u8]) -> String {
 		let mut chars = String::with_capacity(bytes.len());
 		for b in bytes {

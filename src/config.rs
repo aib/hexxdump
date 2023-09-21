@@ -11,7 +11,7 @@ pub const DEFAULT: Config = Config {
 	substitute_character: '.',
 };
 
-/// An object to build and store a [`Hexxdump`]'s configuration
+/// Configures a [`Hexxdump`]'s output
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Config {
 	pub(super) bytes_per_row: usize,
@@ -24,10 +24,10 @@ pub struct Config {
 }
 
 impl Config {
-	/// Creates a new, default configuration object (equivalent to [`DEFAULT`])
+	/// Creates a new, default configuration (equivalent to [`DEFAULT`])
 	pub const fn new() -> Self { DEFAULT }
 
-	/// Builds a [`Hexxdump`] object with this configuration
+	/// Builds a [`Hexxdump`] with this configuration
 	///
 	/// Equivalent to calling [`Hexxdump::with_config`]`(self)`
 	pub const fn into_hexxdump(self) -> Hexxdump { Hexxdump::with_config(self) }
@@ -73,7 +73,7 @@ impl Config {
 	/// The substitute character will be printed for non-ASCII (80 ~ 255) bytes.
 	/// It will also be printed for ASCII control characters (0 ~ 31) if [`use_control_pictures`](Self::use_control_pictures) is set to `false`.
 	///
-	/// Defaults to `'.'`
+	/// Defaults to `.`
 	pub const fn substitute_character(mut self, substitute_character: char) -> Self {
 		self.substitute_character = substitute_character;
 		self
