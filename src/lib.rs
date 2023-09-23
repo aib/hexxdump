@@ -73,9 +73,9 @@ impl Hexxdump {
 	/// Utility function to convert the given `bytes` into a string of hex values
 	///
 	/// Returns the middle column of what would be a single-row hex dump
-	pub fn get_hex_values(&self, bytes: &[u8]) -> String {
-		let mut vals = String::with_capacity(bytes.len() * 3);
-		for b in bytes {
+	pub fn get_hex_values<B: AsRef<[u8]>>(&self, bytes: B) -> String {
+		let mut vals = String::with_capacity(bytes.as_ref().len() * 3);
+		for b in bytes.as_ref() {
 			vals.push_str(&format!("{:02x} ", b));
 		}
 		vals.pop();
@@ -85,9 +85,9 @@ impl Hexxdump {
 	/// Utility function to convert the given `bytes` into a string of characters
 	///
 	/// Returns the the right column of what would be a single-row hex dump
-	pub fn get_characters(&self, bytes: &[u8]) -> String {
-		let mut chars = String::with_capacity(bytes.len());
-		for b in bytes {
+	pub fn get_characters<B: AsRef<[u8]>>(&self, bytes: B) -> String {
+		let mut chars = String::with_capacity(bytes.as_ref().len());
+		for b in bytes.as_ref() {
 			chars.push(self.byte_to_char(*b));
 		}
 		chars
