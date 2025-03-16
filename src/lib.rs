@@ -35,6 +35,9 @@ impl Hexxdump {
 			written += output.write(row.as_bytes())?;
 			written += output.write(&[b'\n'])?;
 		}
+		if written == 0 {
+			written += output.write(&[b'\n'])?;
+		}
 		Ok(written)
 	}
 
@@ -46,6 +49,9 @@ impl Hexxdump {
 				dump.push_str(&address);
 			}
 			dump.push_str(&row);
+			dump.push('\n');
+		}
+		if dump.is_empty() {
 			dump.push('\n');
 		}
 		dump
@@ -292,5 +298,17 @@ mod tests {
 			get_hexdump(b"123", 6),
 			"0000: 31 32 33           123\n"
 		);
+	}
+
+	#[test]
+	fn test_empty_hexdumps() {
+		let dump_str = get_hexdump(b"");
+
+		let mut out_buf = std::io::BufWriter::new(Vec::new());
+		let written = hexdump_to(&mut out_buf, b"").unwrap();
+
+		assert_eq!(dump_str, "\n");
+		assert_eq!(out_buf.buffer(), b"\n");
+		assert_eq!(written, 1);
 	}
 }
